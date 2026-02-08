@@ -138,7 +138,10 @@ class ProfilePage extends StatelessWidget {
                       controller.updateProfile();
                     }
                   },
-                  child: const Text("Update"),
+                  child: const Text(
+                    "Update",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],
