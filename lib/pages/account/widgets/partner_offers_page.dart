@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../communication/partner_offers_controller.dart';
+import '../controllers/partner_offers_controller.dart';
 
 class PartnerOffersPage extends StatelessWidget {
   PartnerOffersPage({super.key});

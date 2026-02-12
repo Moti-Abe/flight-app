@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import '../communication/offers_page.dart';
-// import '../communication/trip_tools_page.dart';
-// import '../communication/travel_edit_page.dart';
-import '../communication/partner_offers_page.dart';
+import '../widgets/partner_offers_page.dart';
 
 class CommunicationPage extends StatelessWidget {
   const CommunicationPage({super.key});
@@ -30,28 +27,24 @@ class CommunicationPage extends StatelessWidget {
           const SizedBox(height: 12),
 
           ListTile(
-            leading: const Icon(Icons.local_offer),
             title: const Text("Offers and recommendations"),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => Get.to(() => PartnerOffersPage()),
           ),
 
           ListTile(
-            leading: const Icon(Icons.edit),
             title: const Text("The travel edit"),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => Get.to(() => PartnerOffersPage()),
           ),
 
           ListTile(
-            leading: const Icon(Icons.build),
             title: const Text("Trip tools and features"),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => Get.to(() => PartnerOffersPage()),
           ),
 
           ListTile(
-            leading: const Icon(Icons.handshake),
             title: const Text("Partner offers"),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => Get.to(() => PartnerOffersPage()),
@@ -64,21 +57,18 @@ class CommunicationPage extends StatelessWidget {
           const SizedBox(height: 12),
 
           ListTile(
-            leading: const Icon(Icons.local_offer),
             title: const Text("Confirmation and critical updates"),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => Get.to(() => PartnerOffersPage()),
           ),
 
           ListTile(
-            leading: const Icon(Icons.edit),
             title: const Text("Reviews"),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => Get.to(() => PartnerOffersPage()),
           ),
 
           ListTile(
-            leading: const Icon(Icons.build),
             title: const Text("Surveys"),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () => Get.to(() => PartnerOffersPage()),

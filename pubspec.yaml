@@ -11,7 +11,8 @@ dependencies:
     sdk: flutter
   get: ^4.6.6
   shared_preferences: ^2.5.4
-  image_picker: ^1.2.1
+  image_picker: ^1.0.7
+  
 
   cupertino_icons: ^1.0.8
 

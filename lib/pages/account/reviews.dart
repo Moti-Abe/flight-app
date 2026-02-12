@@ -1,4 +1,5 @@
-import 'package:expedia/pages/account/profile_page.dart';
+import 'package:expedia/pages/account/account_page.dart';
+// import 'package:expedia/pages/account/profile_page.dart';
 import 'package:expedia/pages/home/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,7 +18,7 @@ class Reviews extends StatelessWidget {
           children: [
             TextButton(
               onPressed: () {
-                Get.to(() => ProfilePage());
+                Get.to(() => AccountPage());
               },
               child: Text("My Account", style: TextStyle(color: Colors.blue)),
             ),
