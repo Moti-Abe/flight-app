@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart'; // <--- Add this import!
 import '../pages/home/home_page.dart';
 import '../pages/search/search_page.dart';
 import '../pages/trips/trips_page.dart';
@@ -31,6 +32,10 @@ class _BottomNavState extends State<BottomNav> {
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
+          // REGISTER controller ONLY when switching to Trips tab
+          if (index == 2 && !Get.isRegistered<TripsController>()) {
+            Get.put(TripsController());
+          }
           setState(() {
             _currentIndex = index;
           });
