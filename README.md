@@ -1,16 +1,74 @@
-# expedia.
+# ✈️ Flight App (Expedia-Inspired Flutter Project)
 
-A new Flutter project.
+A modern Flight Booking UI App built with Flutter, inspired by the Expedia mobile application.
+This project is being developed collaboratively by a team of three members as part of our learning and practical experience in cross-platform mobile development.
 
-## Getting Started
+## 📱 About The Project
 
-This project is a starting point for a Flutter application.
+The Flight App aims to replicate the core UI experience of a flight booking platform like Expedia.
 
-A few resources to get you started if this is your first Flutter project:
+The current focus of the project includes:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Flight search interface
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Date selection UI
+
+- Flight listing screens
+
+- Clean and modern user interface
+
+- Responsive design for multiple platforms
+
+This project is mainly focused on frontend/UI development for now. API integration and backend connectivity may be added in future updates.
+
+
+## 🚀 Built With
+
+- Flutter (Dart)
+
+- Material Design
+
+- Android Studio / VS Code
+
+## 📂 Project Structure
+
+<img width="1352" height="1139" alt="image" src="https://github.com/user-attachments/assets/5c007e83-d20b-4cb0-8e7c-8bbee026d074" />
+
+## 📸 Project Screenshots
+<div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+<table align="center">
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/a63c7e3a-0f2b-45f5-9971-1b0ac0cf45aa" width="300" height="600"/></td>
+    <td><img src="https://github.com/user-attachments/assets/1e5c82ba-01c6-4c2f-948b-bc29a7118012" width="300" height="600"/></td>
+     <td><img src="https://github.com/user-attachments/assets/4ff8741a-8492-4401-a9ba-b6b46cf3a72b" width="300" height="600"/></td>
+  </tr>
+
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/1412dcb0-3192-4c1d-a2fb-c3b8bf5e47e1" width="300" height="600"/></td>
+    <td><img  src="https://github.com/user-attachments/assets/b7a4c944-8125-4bc6-a755-29e427704c9b" width="300" height="600"/></td>
+    <td><img src="https://github.com/user-attachments/assets/22b5e262-5bfb-459f-b7d6-47a6839cb30b" width="300" height="600"/></td>
+  </tr>
+</table>
+
+## 🤝 Team Collaboration
+
+This project is developed by a team of three members as a collaborative learning experience.
+
+We are focusing on:
+
+- Git workflow (branches, pull requests, merging)
+
+- Clean code structure
+
+- UI consistency
+
+- Team coordination
+
+## 📄 License
+
+This project is intended for educational and portfolio purposes only.
+
+## 🌟 Support
+
+If you find this project helpful, feel free to ⭐ star the repository!
+We welcome feedback, contributions, and ideas!
