@@ -22,7 +22,7 @@ class _SignInPageState extends State<SignInPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "SignIn To Flight App",
+          "Welcome To Our App",
           style: TextStyle(color: Colors.blueAccent),
         ),
         centerTitle: true,
@@ -30,8 +30,10 @@ class _SignInPageState extends State<SignInPage> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(15),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          // crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Icon(Icons.lock, size: 84, color: Colors.blue),
+            SizedBox(height: 20.0),
             SocialButton(
               text: "Sign in with Google",
               asset: "assets/images/google.png",

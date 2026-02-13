@@ -60,7 +60,6 @@ class _InboxPageState extends State<InboxPage>
       ),
       body: const TabBarView(
         children: [
-          // Pass only stateless, constrained tab content!
           _TabContent(type: TabContentType.notifications),
           _TabContent(type: TabContentType.messages),
         ],
@@ -69,7 +68,6 @@ class _InboxPageState extends State<InboxPage>
   );
 }
 
-// Tab Content Helper - stateless, always works
 enum TabContentType { notifications, messages }
 
 class _TabContent extends StatelessWidget {
@@ -82,7 +80,6 @@ class _TabContent extends StatelessWidget {
       return ListView(
         padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 22),
         children: [
-          // ignore: deprecated_member_use
           Icon(Icons.notifications_none, size: 84, color: Colors.blue),
           const SizedBox(height: 22),
           const Text(
@@ -122,7 +119,6 @@ class _TabContent extends StatelessWidget {
       return ListView(
         padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 22),
         children: [
-          // ignore: deprecated_member_use
           Icon(Icons.chat_bubble_outline, size: 84, color: Colors.blue),
           const SizedBox(height: 26),
           const Text(
