@@ -138,7 +138,7 @@ class ProfilePage extends StatelessWidget {
               const SizedBox(height: 30),
 
               SizedBox(
-                width: double.infinity,
+                width: 500,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                   onPressed: () {
