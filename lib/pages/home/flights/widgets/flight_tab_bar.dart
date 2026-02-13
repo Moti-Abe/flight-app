@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class FlightTabBar extends StatelessWidget {
@@ -15,7 +14,7 @@ class FlightTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 60,
-      color: Colors.white,
+      color: Colors.transparent,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
