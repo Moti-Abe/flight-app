@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'payment/payment_methods_page.dart';
-import '../account/profile_page.dart';
-import '../account/settings_page.dart';
+import 'widgets/account_header.dart';
+import 'widgets/onekey_card.dart';
+import 'widgets/account_card_item.dart';
+import 'ceredits.dart';
+import 'communication/communication.dart';
+import 'help_and_feedback.dart';
+import 'legal.dart';
+import 'reviews.dart';
+import 'profile_page.dart';
+import 'settings_page.dart';
 import '../home/auth/sign_in_page.dart';
+import 'payment/payment_methods_page.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});
@@ -11,51 +19,60 @@ class AccountPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Hi, Tuamay",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            const AccountHeader(),
+
+            const SizedBox(height: 20),
+
+            const OneKeyCard(),
+
+            const SizedBox(height: 20),
+
+            AccountCardItem(
+              icon: Icons.person,
+              title: "Profile",
+              onTap: () => Get.to(() => ProfilePage()),
             ),
-            const SizedBox(height: 4),
-            const Text(
-              "Tuamay@email.com",
-              style: TextStyle(color: Colors.grey),
+            AccountCardItem(
+              icon: Icons.credit_card,
+              title: "Payment Methods",
+              onTap: () => Get.to(() => const PaymentMethodsPage()),
+            ),
+            AccountCardItem(
+              icon: Icons.safety_check,
+              title: "Credits",
+              onTap: () => Get.to(() => Ceredits()),
+            ),
+            AccountCardItem(
+              icon: Icons.message,
+              title: "Communication",
+              onTap: () => Get.to(() => CommunicationPage()),
+            ),
+            AccountCardItem(
+              icon: Icons.rate_review,
+              title: "Reviews",
+              onTap: () => Get.to(() => Reviews()),
+            ),
+            AccountCardItem(
+              icon: Icons.settings,
+              title: "Security and Settings",
+              onTap: () => Get.to(() => SettingsPage()),
+            ),
+            AccountCardItem(
+              icon: Icons.gavel,
+              title: "Legal",
+              onTap: () => Get.to(() => Legal()),
+            ),
+            AccountCardItem(
+              icon: Icons.question_mark,
+              title: "Help and feedback",
+              onTap: () => Get.to(() => FeedbackPage()),
             ),
 
-            const SizedBox(height: 24),
-
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text("Profile"),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Get.to(() => ProfilePage());
-              },
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.credit_card),
-              title: const Text("Payment Methods"),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Get.to(() => const PaymentMethodsPage());
-              },
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text("Settings"),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Get.to(() => SettingsPage());
-              },
-            ),
-
-            const Spacer(),
+            const SizedBox(height: 20),
 
             SizedBox(
               width: double.infinity,
@@ -65,6 +82,7 @@ class AccountPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: () {
+                  // Get.offAll(() => const SignInPage());
                   Get.to(() => const SignInPage());
                 },
                 child: const Text(
