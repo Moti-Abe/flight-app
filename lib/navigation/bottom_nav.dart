@@ -3,6 +3,7 @@ import 'package:get/get.dart'; // <--- Add this import!
 import '../pages/home/home_page.dart';
 import '../pages/search/search_page.dart';
 import '../pages/trips/trips_page.dart';
+import '../pages/trips/trips_controller.dart';
 import '../pages/inbox/inbox_page.dart';
 import '../pages/account/account_page.dart';
 
