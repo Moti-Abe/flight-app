@@ -19,4 +19,5 @@ final List<CityModel> allCities = [
   CityModel(name: 'Istanbul', code: 'IST', country: 'Turkey'),
   CityModel(name: 'Mumbai', code: 'BOM', country: 'India'),
   CityModel(name: 'Cairo', code: 'CAI', country: 'Egypt'),
+  CityModel(name: 'Houston', code: 'IAH', country: 'United States'),
 ];

@@ -16,14 +16,18 @@ class MyApp extends StatelessWidget {
   final settingsController = Get.put(SettingsController());
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.light,
-      debugShowCheckedModeBanner: false,
-      // home: Scaffold(body: Center(child: CircularProgressIndicator())),
-      // home: SignInPage(),
-      home: BottomNav(),
+    return Obx(
+      () => GetMaterialApp(
+        theme: ThemeData.light(),
+        darkTheme: ThemeData.dark(),
+        themeMode: settingsController.isDarkMode.value
+            ? ThemeMode.dark
+            : ThemeMode.light,
+        debugShowCheckedModeBanner: false,
+        // home: Scaffold(body: Center(child: CircularProgressIndicator())),
+        // home: SignInPage(),
+        home: BottomNav(),
+      ),
     );
   }
 }

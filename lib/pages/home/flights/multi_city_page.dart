@@ -1,5 +1,5 @@
-import 'package:expedia/pages/home/flights/widgets/one_way_widget.dart';
 import 'package:flutter/material.dart';
+import 'multi-city/multi_city_search_page.dart';
 
 class MultiCityPage extends StatefulWidget {
   const MultiCityPage({super.key});
@@ -11,9 +11,6 @@ class MultiCityPage extends StatefulWidget {
 class _MultiCityPageState extends State<MultiCityPage> {
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(children: [OneWayWidget()]),
-    );
+    return const MultiCitySearchPage();
   }
 }
