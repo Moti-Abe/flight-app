@@ -351,15 +351,67 @@ class _MultiCitySearchPageState extends State<MultiCitySearchPage> {
             ),
           ),
           const SizedBox(height: 12),
-          _buildCityField(
-            label: 'Leaving from',
-            controller: fromController,
-            onTap: () => _openCitySearch('From', fromController),
-          ),
-          _buildCityField(
-            label: 'Going to',
-            controller: toController,
-            onTap: () => _openCitySearch('To', toController),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Column(
+                children: [
+                  _buildCityField(
+                    label: 'Leaving from',
+                    controller: fromController,
+                    onTap: () => _openCitySearch('From', fromController),
+                  ),
+                  _buildCityField(
+                    label: 'Going to',
+                    controller: toController,
+                    onTap: () => _openCitySearch('To', toController),
+                  ),
+                ],
+              ),
+              // Swap button positioned on the right between the two fields
+              Positioned(
+                right: 0,
+                top: 32,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      final temp = fromController.text;
+                      fromController.text = toController.text;
+                      toController.text = temp;
+                    });
+                  },
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF1E2433)
+                          : Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF2A3141)
+                            : Colors.grey.shade400,
+                      ),
+                      boxShadow: isDark
+                          ? []
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                    ),
+                    child: Icon(
+                      Icons.swap_vert,
+                      size: 22,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           GestureDetector(
             onTap: onDateTap,
