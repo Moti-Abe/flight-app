@@ -1,0 +1,847 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../models/round_trip_models.dart';
+import '../models/round_trip_mock_data.dart';
+import '../widgets/rt_flight_card.dart';
+import 'rt_select_fare_page.dart';
+
+/// Page 3: Select a return flight — same layout as departing but for the return leg.
+class RtReturnFlightsPage extends StatefulWidget {
+  final RoundTripSearchCriteria criteria;
+  final RoundTripFlight departureFlight;
+
+  const RtReturnFlightsPage({
+    super.key,
+    required this.criteria,
+    required this.departureFlight,
+  });
+
+  @override
+  State<RtReturnFlightsPage> createState() => _RtReturnFlightsPageState();
+}
+
+enum _RetSortOption {
+  recommended,
+  priceLow,
+  priceHigh,
+  durationShort,
+  departEarly,
+  departLate,
+}
+
+class _RtReturnFlightsPageState extends State<RtReturnFlightsPage> {
+  late DateTime _selectedDate;
+  late List<RoundTripFlight> _flights;
+  late Map<DateTime, double> _datePrices;
+
+  _RetSortOption _sortOption = _RetSortOption.recommended;
+  String _stopFilter = 'Any';
+  Set<String> _airlineFilter = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.criteria.returnDate;
+    // Return flights go from "to" back to "from"
+    _datePrices = generateRtDatePrices(
+      widget.criteria.to,
+      widget.criteria.from,
+      _selectedDate,
+      cabin: widget.criteria.cabinClass,
+    );
+    _loadFlights();
+  }
+
+  void _loadFlights() {
+    _flights = generateRoundTripFlights(
+      widget.criteria.to,
+      widget.criteria.from,
+      _selectedDate,
+      cabin: widget.criteria.cabinClass,
+    );
+  }
+
+  void _selectDate(DateTime date) {
+    setState(() {
+      _selectedDate = date;
+      _loadFlights();
+    });
+  }
+
+  String get _fromCode {
+    final match = RegExp(r'\((\w+)').firstMatch(widget.criteria.to);
+    return match?.group(1) ?? widget.criteria.to.split(' ').first;
+  }
+
+  String get _toCode {
+    final match = RegExp(r'\((\w+)').firstMatch(widget.criteria.from);
+    return match?.group(1) ?? widget.criteria.from.split(' ').first;
+  }
+
+  int _parseDurationMinutes(String d) {
+    final hMatch = RegExp(r'(\d+)h').firstMatch(d);
+    final mMatch = RegExp(r'(\d+)m').firstMatch(d);
+    return (int.tryParse(hMatch?.group(1) ?? '0') ?? 0) * 60 +
+        (int.tryParse(mMatch?.group(1) ?? '0') ?? 0);
+  }
+
+  List<RoundTripFlight> get _displayFlights {
+    var list = _flights.where((f) {
+      if (_stopFilter == 'Nonstop' && f.stops != 'Nonstop') return false;
+      if (_stopFilter == '1 stop or fewer' &&
+          f.stops != 'Nonstop' &&
+          f.stops != '1 stop') {
+        return false;
+      }
+      if (_airlineFilter.isNotEmpty && !_airlineFilter.contains(f.airline)) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    switch (_sortOption) {
+      case _RetSortOption.recommended:
+        break;
+      case _RetSortOption.priceLow:
+        list.sort((a, b) => a.price.compareTo(b.price));
+      case _RetSortOption.priceHigh:
+        list.sort((a, b) => b.price.compareTo(a.price));
+      case _RetSortOption.durationShort:
+        list.sort(
+          (a, b) => _parseDurationMinutes(
+            a.duration,
+          ).compareTo(_parseDurationMinutes(b.duration)),
+        );
+      case _RetSortOption.departEarly:
+        list.sort((a, b) => a.departTime.compareTo(b.departTime));
+      case _RetSortOption.departLate:
+        list.sort((a, b) => b.departTime.compareTo(a.departTime));
+    }
+    return list;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
+    final pageBackground = isDark ? const Color(0xFF0B0F1A) : colors.surface;
+
+    return Scaffold(
+      backgroundColor: pageBackground,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildSearchPillBar(context),
+            // Selected departure summary
+            _buildDepartureSummary(context),
+            _buildDatePriceScroller(context),
+            Expanded(
+              child: _flights.isEmpty
+                  ? _buildEmptyState(context)
+                  : Builder(
+                      builder: (context) {
+                        final visible = _displayFlights;
+                        if (visible.isEmpty) {
+                          return _buildNoFilterResults(context);
+                        }
+                        return ListView(
+                          padding: const EdgeInsets.only(bottom: 80),
+                          children: [
+                            _buildSectionHeader(context),
+                            ...visible.map(
+                              (flight) => RtFlightCard(
+                                flight: flight,
+                                onSelect: () => _selectReturnFlight(flight),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: _buildSortFilterFab(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  // ─── Departure summary banner ───
+  Widget _buildDepartureSummary(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
+    final bgColor = isDark ? const Color(0xFF111624) : const Color(0xFFE3F2FD);
+    final dep = widget.departureFlight;
+    final formatter = NumberFormat.simpleCurrency(
+      name: 'USD',
+      decimalDigits: 0,
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color: bgColor,
+      child: Row(
+        children: [
+          Icon(
+            Icons.flight_takeoff,
+            size: 18,
+            color: isDark ? const Color(0xFF7FB5FF) : const Color(0xFF1565C0),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Departing: ${dep.departTime} – ${dep.arriveTime}  ·  ${dep.airline}  ·  ${formatter.format(dep.price)}',
+              style: TextStyle(
+                color: colors.onSurface,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Text(
+              'Change',
+              style: TextStyle(
+                color: isDark
+                    ? const Color(0xFF7FB5FF)
+                    : const Color(0xFF1565C0),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Search Pill App Bar ───
+  Widget _buildSearchPillBar(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
+    final bgColor = isDark ? const Color(0xFF0B0F1A) : colors.surface;
+    final pillBg = isDark ? const Color(0xFF151A24) : Colors.white;
+    final pillBorder = isDark ? const Color(0xFF2A3141) : Colors.grey.shade300;
+
+    final departText = DateFormat('MMM d').format(widget.criteria.departDate);
+    final returnText = DateFormat('MMM d').format(widget.criteria.returnDate);
+    final dateText =
+        '$departText - $returnText  ·  ${widget.criteria.travelers} traveler${widget.criteria.travelers > 1 ? 's' : ''}';
+
+    return Container(
+      color: bgColor,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: colors.onSurface),
+            onPressed: () => Navigator.pop(context),
+          ),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: pillBg,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: pillBorder),
+                boxShadow: isDark
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFDD835),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.search,
+                      size: 20,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$_fromCode → $_toCode  (Return)',
+                          style: TextStyle(
+                            color: colors.onSurface,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          dateText,
+                          style: TextStyle(
+                            color: colors.onSurface.withValues(alpha: 0.6),
+                            fontSize: 12,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.share_outlined, color: colors.onSurface),
+            onPressed: () {},
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Horizontal date-price scroller ───
+  Widget _buildDatePriceScroller(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
+    final sortedDates = _datePrices.keys.toList()..sort();
+    final formatter = NumberFormat.simpleCurrency(
+      name: 'USD',
+      decimalDigits: 0,
+    );
+
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? const Color(0xFF2A3141) : Colors.grey.shade200,
+          ),
+        ),
+      ),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        itemCount: sortedDates.length,
+        itemBuilder: (context, index) {
+          final date = sortedDates[index];
+          final price = _datePrices[date]!;
+          final isSelected =
+              date.day == _selectedDate.day &&
+              date.month == _selectedDate.month &&
+              date.year == _selectedDate.year;
+
+          return GestureDetector(
+            onTap: () => _selectDate(date),
+            child: Container(
+              width: 90,
+              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? (isDark
+                          ? const Color(0xFF1A2340)
+                          : const Color(0xFFE3F2FD))
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+                border: isSelected
+                    ? Border.all(color: const Color(0xFF1565C0), width: 2)
+                    : null,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    DateFormat('E, MMM d').format(date),
+                    style: TextStyle(
+                      color: isSelected
+                          ? (isDark ? Colors.white : const Color(0xFF1565C0))
+                          : colors.onSurface,
+                      fontSize: 11,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    formatter.format(price),
+                    style: TextStyle(
+                      color: isSelected
+                          ? (isDark ? Colors.white : const Color(0xFF1565C0))
+                          : colors.onSurface,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Select a return flight',
+            style: TextStyle(
+              color: colors.onSurface,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Text(
+                'How our sort order works and personalized pricing',
+                style: TextStyle(
+                  color: colors.onSurface.withValues(alpha: 0.55),
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.info_outline,
+                size: 14,
+                color: colors.onSurface.withValues(alpha: 0.5),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.flight_land,
+            size: 64,
+            color: colors.onSurface.withValues(alpha: 0.3),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No return flights found',
+            style: TextStyle(
+              color: colors.onSurface.withValues(alpha: 0.6),
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoFilterResults(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.filter_alt_off,
+              size: 48,
+              color: colors.onSurface.withValues(alpha: 0.4),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'No flights match your filters',
+              style: TextStyle(
+                color: colors.onSurface.withValues(alpha: 0.7),
+                fontSize: 15,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => setState(() {
+                _sortOption = _RetSortOption.recommended;
+                _stopFilter = 'Any';
+                _airlineFilter = {};
+              }),
+              child: const Text('Clear all filters'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Sort & Filter FAB ───
+  Widget _buildSortFilterFab(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hasActive =
+        _sortOption != _RetSortOption.recommended ||
+        _stopFilter != 'Any' ||
+        _airlineFilter.isNotEmpty;
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: isDark ? const Color(0xFF151A24) : Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: () => _showSortFilterSheet(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.tune,
+                  size: 18,
+                  color: isDark
+                      ? const Color(0xFF7FB5FF)
+                      : const Color(0xFF1565C0),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Sort & Filter',
+                  style: TextStyle(
+                    color: isDark
+                        ? const Color(0xFF7FB5FF)
+                        : const Color(0xFF1565C0),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (hasActive) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF1565C0),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSortFilterSheet() {
+    var tempSort = _sortOption;
+    var tempStop = _stopFilter;
+    var tempAirlines = Set<String>.from(_airlineFilter);
+    final availableAirlines = _flights.map((f) => f.airline).toSet().toList()
+      ..sort();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        final isDark = Theme.of(sheetContext).brightness == Brightness.dark;
+        final colors = Theme.of(sheetContext).colorScheme;
+        final bgColor = isDark ? const Color(0xFF151A24) : Colors.white;
+        final accentColor = isDark
+            ? const Color(0xFF7FB5FF)
+            : const Color(0xFF1565C0);
+
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            Widget sortTile(String label, _RetSortOption value) {
+              final selected = tempSort == value;
+              return ListTile(
+                dense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                title: Text(
+                  label,
+                  style: TextStyle(
+                    color: selected ? accentColor : colors.onSurface,
+                    fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+                trailing: selected
+                    ? Icon(Icons.check, color: accentColor, size: 20)
+                    : null,
+                onTap: () => setSheetState(() => tempSort = value),
+              );
+            }
+
+            Widget stopChip(String label) {
+              final selected = tempStop == label;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(label),
+                  selected: selected,
+                  onSelected: (_) => setSheetState(() => tempStop = label),
+                  selectedColor: accentColor.withValues(alpha: 0.2),
+                  labelStyle: TextStyle(
+                    color: selected ? accentColor : colors.onSurface,
+                    fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                  side: BorderSide(
+                    color: selected
+                        ? accentColor
+                        : colors.onSurface.withValues(alpha: 0.3),
+                  ),
+                  showCheckmark: false,
+                ),
+              );
+            }
+
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(sheetContext).size.height * 0.75,
+              ),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 4),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: colors.onSurface.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Sort & Filter',
+                          style: TextStyle(
+                            color: colors.onSurface,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () => setSheetState(() {
+                            tempSort = _RetSortOption.recommended;
+                            tempStop = 'Any';
+                            tempAirlines = {};
+                          }),
+                          child: Text(
+                            'Reset',
+                            style: TextStyle(color: accentColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 16, 24, 4),
+                            child: Text(
+                              'Sort by',
+                              style: TextStyle(
+                                color: colors.onSurface,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          sortTile('Recommended', _RetSortOption.recommended),
+                          sortTile(
+                            'Price (low to high)',
+                            _RetSortOption.priceLow,
+                          ),
+                          sortTile(
+                            'Price (high to low)',
+                            _RetSortOption.priceHigh,
+                          ),
+                          sortTile(
+                            'Duration (shortest)',
+                            _RetSortOption.durationShort,
+                          ),
+                          sortTile(
+                            'Departure (earliest)',
+                            _RetSortOption.departEarly,
+                          ),
+                          sortTile(
+                            'Departure (latest)',
+                            _RetSortOption.departLate,
+                          ),
+                          const SizedBox(height: 8),
+                          const Divider(height: 1),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                            child: Text(
+                              'Stops',
+                              style: TextStyle(
+                                color: colors.onSurface,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Wrap(
+                              children: [
+                                stopChip('Any'),
+                                stopChip('Nonstop'),
+                                stopChip('1 stop or fewer'),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Divider(height: 1),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 16, 24, 4),
+                            child: Text(
+                              'Airlines',
+                              style: TextStyle(
+                                color: colors.onSurface,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          ...availableAirlines.map((airline) {
+                            final selected =
+                                tempAirlines.isEmpty ||
+                                tempAirlines.contains(airline);
+                            return CheckboxListTile(
+                              dense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              title: Text(
+                                airline,
+                                style: TextStyle(color: colors.onSurface),
+                              ),
+                              value: selected,
+                              activeColor: accentColor,
+                              onChanged: (val) {
+                                setSheetState(() {
+                                  if (val == true) {
+                                    if (tempAirlines.isEmpty) {
+                                      tempAirlines = availableAirlines.toSet();
+                                    }
+                                    tempAirlines.add(airline);
+                                  } else {
+                                    if (tempAirlines.isEmpty) {
+                                      tempAirlines = availableAirlines.toSet();
+                                    }
+                                    tempAirlines.remove(airline);
+                                    if (tempAirlines.length ==
+                                        availableAirlines.length) {
+                                      tempAirlines = {};
+                                    }
+                                  }
+                                });
+                              },
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _sortOption = tempSort;
+                              _stopFilter = tempStop;
+                              _airlineFilter = tempAirlines;
+                            });
+                            Navigator.pop(sheetContext);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1565C0),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ─── Navigation ───
+  void _selectReturnFlight(RoundTripFlight flight) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RtSelectFarePage(
+          criteria: widget.criteria,
+          departureFlight: widget.departureFlight,
+          returnFlight: flight,
+        ),
+      ),
+    );
+  }
+}

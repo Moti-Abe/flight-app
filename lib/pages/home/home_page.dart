@@ -38,8 +38,8 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.blueAccent,
         title: Row(
           children: [
-            // Image.asset("assets/images/expedia_logo.png", height: 40),
-            Expanded(child: Text("Flight App")),
+            Image.asset("assets/images/wellfly.png", height: 40),
+            // Expanded(child: Text("Flight App")),
           ],
         ),
         // actions: [

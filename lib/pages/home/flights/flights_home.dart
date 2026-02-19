@@ -15,7 +15,7 @@ class _FlightsPageState extends State<FlightsPage> {
   int _flightIndex = 0;
 
   final List<Widget> _flightPages = [
-    RoundtripPage(),
+    const RoundtripPage(),
     const OneWayPage(),
     const MultiCityPage(),
   ];
