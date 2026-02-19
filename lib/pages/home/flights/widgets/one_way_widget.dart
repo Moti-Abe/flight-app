@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../OnewayPage/models/one_way_models.dart';
+import '../OnewayPage/pages/one_way_recommended_page.dart';
 import 'flight_date_field.dart';
 import 'flight_text_field.dart';
 import 'search_button.dart';
@@ -17,6 +19,7 @@ class _OneWayState extends State<OneWayWidget> {
   final fromController = TextEditingController();
   final toController = TextEditingController();
   final departController = TextEditingController();
+  DateTime? _selectedDate;
 
   int travelers = 1;
   String cabinClass = "Economy";
@@ -118,7 +121,13 @@ class _OneWayState extends State<OneWayWidget> {
                 ),
               ],
             ),
-            FlightDateField(label: "Dates", controller: departController),
+            FlightDateField(
+              label: "Dates",
+              controller: departController,
+              onDatePicked: (date) {
+                _selectedDate = date;
+              },
+            ),
             const SizedBox(height: 12),
             GestureDetector(
               onTap: _showTravelerModal,
@@ -149,7 +158,20 @@ class _OneWayState extends State<OneWayWidget> {
             SearchButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  debugPrint("Searching flights...");
+                  final criteria = OneWaySearchCriteria(
+                    from: fromController.text,
+                    to: toController.text,
+                    departDate: _selectedDate ?? DateTime.now(),
+                    travelers: travelers,
+                    cabinClass: cabinClass,
+                  );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          OneWayRecommendedPage(criteria: criteria),
+                    ),
+                  );
                 }
               },
             ),

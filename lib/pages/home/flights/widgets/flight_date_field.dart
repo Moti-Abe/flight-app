@@ -4,11 +4,13 @@ import 'package:intl/intl.dart';
 class FlightDateField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
+  final ValueChanged<DateTime>? onDatePicked;
 
   const FlightDateField({
     super.key,
     required this.label,
     required this.controller,
+    this.onDatePicked,
   });
 
   @override
@@ -27,6 +29,7 @@ class FlightDateField extends StatelessWidget {
           );
           if (picked != null) {
             controller.text = DateFormat('EEE, MMM d').format(picked);
+            onDatePicked?.call(picked);
           }
         },
         validator: (v) => v!.isEmpty ? "Select date" : null,
